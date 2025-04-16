@@ -1,14 +1,16 @@
 name: Update Contributors HTML
 on:
-  push:
-    paths:
-      - 'Contributors.md'
+  workflow_run:
+    workflows: ["Auto-merge PRs"]
+    types:
+      - completed
     branches:
-      - main 
+      - main
 
 jobs:
   update-html:
     runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
