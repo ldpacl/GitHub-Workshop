@@ -1,4 +1,4 @@
-name: Auto-merge PRs
+name: Auto-merge PRs and Update HTML
 on:
   pull_request_target:
     types: [opened, synchronize]
@@ -6,7 +6,7 @@ on:
       - 'Contributors.md'
     
 jobs:
-  auto-merge:
+  auto-merge-and-update:
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -103,6 +103,55 @@ jobs:
 
               core.setFailed(error.message);
             }
+
+      - name: Checkout main branch
+        if: steps.merge_pr.outcome == 'success'
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Set up Python
+        if: steps.merge_pr.outcome == 'success'
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Update index.html
+        if: steps.merge_pr.outcome == 'success'
+        run: |
+          import re
+          
+          # Read Contributors.md
+          with open('Contributors.md', 'r') as f:
+              contributors = re.findall(r'\[(.+?)\]', f.read())
+          
+          # Read index.html
+          with open('index.html', 'r') as f:
+              html_content = f.read()
+          
+          # Create new card divs
+          new_cards = '\n'.join([f'      <div class="card">{name}</div>' for name in contributors])
+          
+          # Replace existing cards with new ones
+          updated_html = re.sub(
+              r'<div class="grid">.*?</div>',
+              f'<div class="grid">\n{new_cards}\n    </div>',
+              html_content,
+              flags=re.DOTALL
+          )
+          
+          # Write updated content back to index.html
+          with open('index.html', 'w') as f:
+              f.write(updated_html)
+        shell: python
+
+      - name: Commit and push if changed
+        if: steps.merge_pr.outcome == 'success'
+        run: |
+          git config --global user.email "action@github.com"
+          git config --global user.name "GitHub Action"
+          git add index.html
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Update contributors in index.html" && git push)
 
       - name: Post comment on PR if not merged automatically
         if: env.only_contributors != 'true'
