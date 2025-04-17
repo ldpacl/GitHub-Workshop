@@ -2,6 +2,7 @@
 
 - [Dpac](https://github.com/ldpacl)
 - [Darshan Krishna](https;//github.com/DarshanKrishna-DK)
+- [Meghana50](https://github.com/Meghana50)
 - [sneha](https://github.com/Sneha6268)
 - [sneha](https://github.com/Sneha-pv25)
 - [Abin M](https://github.com/AbinManikandan)
